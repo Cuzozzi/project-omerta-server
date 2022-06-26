@@ -18,10 +18,6 @@ AppDataSource.initialize()
     const users = await AppDataSource.manager.find(User);
     console.log("Loaded users: ", users);
 
-    console.log(
-      "Here you can setup and run express / fastify / any other framework."
-    );
-
     app.get("/", (req, res) => {
       res.send("Hello World!");
     });
