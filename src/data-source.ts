@@ -8,7 +8,7 @@ export const AppDataSource = new DataSource({
   port: 5432,
   username: "postgres",
   password: "<3tomas",
-  database: "project-omerta-server",
+  database: "postgres",
   synchronize: true,
   logging: false,
   entities: [User],
