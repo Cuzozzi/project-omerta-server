@@ -1,5 +1,6 @@
 import { resolve } from "path";
 import { AppDataSource } from "./data-source";
+import { login_credentials } from "./entity/login-credentials";
 import { testUser } from "./entity/testUser";
 const express = require("express");
 const app = express();
@@ -31,6 +32,18 @@ AppDataSource.initialize()
       const testUsers = await AppDataSource.manager.find(testUser);
       console.log(testUsers);
       res.send("This works!");
+    });
+
+    app.post("/login_credentials", async (req, res) => {
+      console.log(req);
+      const newLogin = new login_credentials();
+      newLogin.email = req.body.email;
+      newLogin.password = req.body.password;
+      console.log(newLogin);
+      await AppDataSource.manager.save(newLogin);
+      const newLogins = await AppDataSource.manager.find(login_credentials);
+      console.log(newLogins);
+      res.send("This also works!");
     });
 
     app.listen(port, () => {

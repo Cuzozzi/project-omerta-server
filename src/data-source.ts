@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { login_credentials } from "./entity/login-credentials";
 import { testUser } from "./entity/testUser";
 
 export const AppDataSource = new DataSource({
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
   database: "project-omerta-database",
   synchronize: true,
   logging: false,
-  entities: [testUser],
+  entities: [testUser, login_credentials],
   migrations: [],
   subscribers: [],
 });
