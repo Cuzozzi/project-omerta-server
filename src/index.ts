@@ -1,7 +1,7 @@
-import { resolve } from "path";
 import { AppDataSource } from "./data-source";
 import { login_credentials } from "./entity/login-credentials";
-import { testUser } from "./entity/testUser";
+import tokenGen from "../tokenGen";
+
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -18,32 +18,48 @@ AppDataSource.initialize()
       next();
     });
 
-    app.get("/user", async (req, res) => {
-      const testuser = await AppDataSource.manager.find(testUser);
-      res.send(testuser);
+    // login
+    app.post("/login_authentication", async (req, res) => {
+      const email = req.body.email;
+      const password = req.body.password;
+      const token = tokenGen();
+      AppDataSource.manager
+        .query(
+          `SELECT id 
+      FROM login_credentials
+      WHERE email = '${email}' 
+      AND password = crypt('${password}', password) 
+      `
+        )
+        .then(function (response) {
+          console.log(response);
+          if (response.length === 0) {
+            res.send("Not Authenticated");
+          } else {
+            AppDataSource.manager
+              .query(`INSERT INTO session_tokens (user_id, token) VALUES (
+              '${response[0].id}',
+              '${token}'
+            )`);
+            res.send({
+              response: "Authenticated",
+              token: token,
+            });
+          }
+        });
     });
 
-    app.post("/user", async (req, res) => {
-      console.log(req.body);
-      const testuser = new testUser();
-      testuser.firstName = req.body.firstName;
-      testuser.secondName = req.body.secondName;
-      await AppDataSource.manager.save(testuser);
-      const testUsers = await AppDataSource.manager.find(testUser);
-      console.log(testUsers);
-      res.send("This works!");
-    });
-
+    // sign up
     app.post("/login_credentials", async (req, res) => {
-      console.log(req);
-      const newLogin = new login_credentials();
-      newLogin.email = req.body.email;
-      newLogin.password = req.body.password;
-      console.log(newLogin);
-      await AppDataSource.manager.save(newLogin);
-      const newLogins = await AppDataSource.manager.find(login_credentials);
-      console.log(newLogins);
-      res.send("This also works!");
+      const email = req.body.email;
+      const password = req.body.password;
+      await AppDataSource.manager
+        .query(`INSERT INTO login_credentials (email, password) VALUES (
+        '${email}',
+        crypt('${password}', gen_salt('bf', 8)) 
+      );`);
+
+      res.send("works");
     });
 
     app.listen(port, () => {
