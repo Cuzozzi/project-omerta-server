@@ -1,5 +1,6 @@
 import { AppDataSource } from "./data-source";
 import { login_credentials } from "./entity/login-credentials";
+
 import tokenGen from "../tokenGen";
 
 const express = require("express");
@@ -36,10 +37,14 @@ AppDataSource.initialize()
           if (response.length === 0) {
             res.send("Not Authenticated");
           } else {
+            const tokenExpiry = String(7 * 24 * 60 * 60);
             AppDataSource.manager
-              .query(`INSERT INTO session_tokens (user_id, token) VALUES (
-              '${response[0].id}',
-              '${token}'
+              .query(`INSERT INTO session_tokens (user_id, token, expiry) VALUES (
+              ${response[0].id},
+              '${token}',
+              CURRENT_TIMESTAMP + interval '${String(
+                1
+              )} second' * ${tokenExpiry}
             )`);
             res.send({
               response: "Authenticated",
