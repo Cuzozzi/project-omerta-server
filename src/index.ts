@@ -1,6 +1,5 @@
 import { AppDataSource } from "./data-source";
 import { login_credentials } from "./entity/login-credentials";
-
 import tokenGen from "../tokenGen";
 import { request } from "http";
 
@@ -8,9 +7,19 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const port = 5433;
+const cors = require("cors");
 
 AppDataSource.initialize()
   .then(async () => {
+    app.use(
+      cors({
+        credentials: true,
+        preflightContinue: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        origin: true,
+      })
+    );
+
     app.use(function (req, res, next) {
       res.header("Access-Control-Allow-Origin", "http://localhost:3001");
       res.header(
@@ -63,6 +72,34 @@ AppDataSource.initialize()
       WHERE token = '${String(token)}'
       `);
       res.send("Token deleted");
+    });
+
+    app.post("/authentication_time_check", async (req, res) => {
+      const token = req.body.token;
+      console.log(token);
+      await AppDataSource.manager
+        .query(
+          `SELECT expiry FROM session_tokens WHERE token = '${String(
+            token
+          )}' AND
+        expiry > now()`
+        )
+        .then(async (response) => {
+          if (response.length > 0) {
+            res.send({
+              response: "Token valid",
+              token: token,
+            });
+          } else {
+            await AppDataSource.manager.query(
+              `DELETE FROM session_tokens WHERE token = '${String(token)}'`
+            );
+            res.send({
+              response: "Token invalid",
+              token: token,
+            });
+          }
+        });
     });
 
     // sign up
