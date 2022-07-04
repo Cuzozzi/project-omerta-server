@@ -2,6 +2,7 @@ import { AppDataSource } from "./data-source";
 import { login_credentials } from "./entity/login-credentials";
 
 import tokenGen from "../tokenGen";
+import { request } from "http";
 
 const express = require("express");
 const app = express();
@@ -16,11 +17,12 @@ AppDataSource.initialize()
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept"
       );
+      res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       next();
     });
 
     // login
-    app.post("/login_authentication", async (req, res) => {
+    app.post("/authentication", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
       const token = tokenGen();
@@ -52,6 +54,15 @@ AppDataSource.initialize()
             });
           }
         });
+    });
+
+    app.delete("/authentication", (req, res) => {
+      const token = req.body.token;
+      console.log(token);
+      AppDataSource.manager.query(`DELETE FROM session_tokens
+      WHERE token = '${String(token)}'
+      `);
+      res.send("Token deleted");
     });
 
     // sign up
