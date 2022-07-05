@@ -10,4 +10,7 @@ export class login_credentials {
 
   @Column()
   password: string;
+
+  @Column()
+  admin: boolean;
 }

@@ -102,14 +102,37 @@ AppDataSource.initialize()
         });
     });
 
+    app.post("/admin_authentication", async (req, res) => {
+      const email = req.body.email;
+      const password = req.body.password;
+      console.log(email);
+      await AppDataSource.manager
+        .query(
+          `SELECT id FROM login_credentials WHERE email = '${email}' 
+          AND password = crypt('${password}', password) AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0) {
+            res.send({
+              response: "Admin authenticated",
+            });
+          } else {
+            res.send({
+              response: "Admin not authenticated",
+            });
+          }
+        });
+    });
+
     // sign up
     app.post("/login_credentials", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
       await AppDataSource.manager
-        .query(`INSERT INTO login_credentials (email, password) VALUES (
+        .query(`INSERT INTO login_credentials (email, password, admin) VALUES (
         '${email}',
-        crypt('${password}', gen_salt('bf', 8)) 
+        crypt('${password}', gen_salt('bf', 8)),
+        false
       );`);
 
       res.send("works");
