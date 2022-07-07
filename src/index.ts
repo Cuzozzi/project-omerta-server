@@ -37,9 +37,10 @@ AppDataSource.initialize()
       const email = req.body.email;
       const password = req.body.password;
       await AppDataSource.manager
-        .query(`INSERT INTO login_credentials (email, password, admin) VALUES (
+        .query(`INSERT INTO login_credentials (email, password, admin, moderator) VALUES (
             '${email}',
             crypt('${password}', gen_salt('bf', 8)),
+            false,
             false
           );`);
 
@@ -142,6 +143,32 @@ AppDataSource.initialize()
         });
     });
 
+    app.post("/admin-console-add", async (req, res) => {
+      const email = req.body.email;
+      const password = req.body.password;
+      const token = req.body.token;
+      console.log(email, password, token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0) {
+            AppDataSource.manager
+              .query(`INSERT INTO login_credentials (email, password, admin, moderator) VALUES (
+                '${email}',
+                crypt('${password}', gen_salt('bf', 8)),
+                false,
+                false
+              );`);
+            res.send("User added");
+          } else {
+            res.send("Authentication failed");
+          }
+        });
+    });
+
     app.delete("/admin-console-delete", (req, res) => {
       const user_id = req.body.user_id;
       const user_email = req.body.user_email;
@@ -197,6 +224,78 @@ AppDataSource.initialize()
                 );
                 res.send("User tokens deleted by email");
               });
+          } else {
+            res.send("Authentication failed");
+          }
+        });
+    });
+
+    app.delete("/admin-console-delete-all-tokens", (req, res) => {
+      const token = req.body.token;
+      console.log(token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0) {
+            AppDataSource.manager.query(`DELETE FROM session_tokens`);
+            res.send("All session tokens deleted sitewide");
+          } else {
+            res.send("Authentication failed");
+          }
+        });
+    });
+
+    app.put("/admin-console-give-moderator", (req, res) => {
+      const user_id = req.body.user_id;
+      const user_email = req.body.user_email;
+      const token = req.body.token;
+      console.log(user_id, user_email, token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0 && req.body.user_id > 0) {
+            AppDataSource.manager.query(
+              `UPDATE login_credentials SET moderator = true WHERE id = ${user_id}`
+            );
+            res.send("User granted moderator role by ID");
+          } else if (response.length > 0 && req.body.user_email !== "") {
+            AppDataSource.manager.query(
+              `UPDATE login_credentials SET moderator = true WHERE email = '${user_email}'`
+            );
+            res.send("User granted moderator role by email");
+          } else {
+            res.send("Authentication failed");
+          }
+        });
+    });
+
+    app.put("/admin-console-remove-moderator", (req, res) => {
+      const user_id = req.body.user_id;
+      const user_email = req.body.user_email;
+      const token = req.body.token;
+      console.log(user_id, user_email, token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0 && req.body.user_id > 0) {
+            AppDataSource.manager.query(
+              `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
+            );
+            res.send("User revoked moderator role by ID");
+          } else if (response.length > 0 && req.body.user_email !== "") {
+            AppDataSource.manager.query(
+              `UPDATE login_credentials SET moderator = false WHERE email = '${user_email}'`
+            );
+            res.send("User revoked moderator role by email");
           } else {
             res.send("Authentication failed");
           }

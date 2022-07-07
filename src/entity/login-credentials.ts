@@ -12,5 +12,8 @@ export class login_credentials {
   password: string;
 
   @Column()
+  moderator: boolean;
+
+  @Column()
   admin: boolean;
 }
