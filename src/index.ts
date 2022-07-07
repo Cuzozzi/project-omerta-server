@@ -54,7 +54,7 @@ AppDataSource.initialize()
       const token = tokenGen();
       AppDataSource.manager
         .query(
-          `SELECT id 
+          `SELECT id, admin
       FROM login_credentials
       WHERE email = '${email}' 
       AND password = crypt('${password}', password) 
@@ -77,6 +77,7 @@ AppDataSource.initialize()
             res.send({
               response: "Authenticated",
               token: token,
+              admin: response[0].admin,
             });
           }
         });
@@ -122,13 +123,12 @@ AppDataSource.initialize()
 
     //admin authentication and console
     app.post("/admin_authentication", async (req, res) => {
-      const email = req.body.email;
-      const password = req.body.password;
-      console.log(email);
-      await AppDataSource.manager
+      const token = req.body.token;
+      console.log(token);
+      AppDataSource.manager
         .query(
-          `SELECT id FROM login_credentials WHERE email = '${email}' 
-          AND password = crypt('${password}', password) AND admin = true`
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0) {
