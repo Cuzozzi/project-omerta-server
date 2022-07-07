@@ -2,6 +2,8 @@ import { AppDataSource } from "./data-source";
 import { login_credentials } from "./entity/login-credentials";
 import tokenGen from "../tokenGen";
 import { request } from "http";
+import { as } from "pg-promise";
+import { response } from "express";
 
 const express = require("express");
 const app = express();
@@ -30,7 +32,21 @@ AppDataSource.initialize()
       next();
     });
 
-    // login
+    // sign up
+    app.post("/login_credentials", async (req, res) => {
+      const email = req.body.email;
+      const password = req.body.password;
+      await AppDataSource.manager
+        .query(`INSERT INTO login_credentials (email, password, admin) VALUES (
+            '${email}',
+            crypt('${password}', gen_salt('bf', 8)),
+            false
+          );`);
+
+      res.send("works");
+    });
+
+    // login authentication
     app.post("/authentication", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
@@ -65,15 +81,6 @@ AppDataSource.initialize()
         });
     });
 
-    app.delete("/authentication", (req, res) => {
-      const token = req.body.token;
-      console.log(token);
-      AppDataSource.manager.query(`DELETE FROM session_tokens
-      WHERE token = '${String(token)}'
-      `);
-      res.send("Token deleted");
-    });
-
     app.post("/authentication_time_check", async (req, res) => {
       const token = req.body.token;
       console.log(token);
@@ -102,6 +109,17 @@ AppDataSource.initialize()
         });
     });
 
+    //logout
+    app.delete("/authentication", (req, res) => {
+      const token = req.body.token;
+      console.log(token);
+      AppDataSource.manager.query(`DELETE FROM session_tokens
+      WHERE token = '${String(token)}'
+      `);
+      res.send("Token deleted");
+    });
+
+    //admin authentication and console
     app.post("/admin_authentication", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
@@ -124,18 +142,65 @@ AppDataSource.initialize()
         });
     });
 
-    // sign up
-    app.post("/login_credentials", async (req, res) => {
-      const email = req.body.email;
-      const password = req.body.password;
-      await AppDataSource.manager
-        .query(`INSERT INTO login_credentials (email, password, admin) VALUES (
-        '${email}',
-        crypt('${password}', gen_salt('bf', 8)),
-        false
-      );`);
+    app.delete("/admin-console-delete", (req, res) => {
+      const user_id = req.body.user_id;
+      const user_email = req.body.user_email;
+      const token = req.body.token;
+      console.log(user_id, user_email, token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0 && req.body.user_id > 0) {
+            AppDataSource.manager.query(
+              `DELETE FROM login_credentials WHERE id = ${user_id}`
+            );
+            res.send("User deleted by ID");
+          } else if (response.length > 0 && req.body.user_email !== "") {
+            AppDataSource.manager.query(
+              `DELETE FROM login_credentials WHERE email = '${user_email}'`
+            );
+            res.send("User deleted by email");
+          } else {
+            res.send("Authentication failed");
+          }
+        });
+    });
 
-      res.send("works");
+    app.delete("/admin-console-delete-tokens", (req, res) => {
+      let user_id = req.body.user_id;
+      const user_email = req.body.user_email;
+      const token = req.body.token;
+      console.log(user_id, user_email, token);
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0 && req.body.user_id > 0) {
+            AppDataSource.manager.query(
+              `DELETE FROM session_tokens WHERE user_id = ${user_id}`
+            );
+            res.send("User tokens deleted by ID");
+          } else if (response.length > 0 && req.body.user_email !== "") {
+            AppDataSource.manager
+              .query(
+                `SELECT id FROM login_credentials WHERE email = '${user_email}'`
+              )
+              .then(async (response) => {
+                user_id = response[0].id;
+                AppDataSource.manager.query(
+                  `DELETE FROM session_tokens WHERE user_id = ${user_id}`
+                );
+                res.send("User tokens deleted by email");
+              });
+          } else {
+            res.send("Authentication failed");
+          }
+        });
     });
 
     app.listen(port, () => {
