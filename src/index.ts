@@ -44,7 +44,7 @@ AppDataSource.initialize()
             false
           );`);
 
-      res.status(200).send("works");
+      res.sendStatus(200);
     });
 
     // login authentication
@@ -63,7 +63,7 @@ AppDataSource.initialize()
         .then(function (response) {
           console.log(response);
           if (response.length === 0) {
-            res.status(401).send("Not Authenticated");
+            res.sendStatus(401);
           } else {
             const tokenExpiry = String(7 * 24 * 60 * 60);
             AppDataSource.manager
