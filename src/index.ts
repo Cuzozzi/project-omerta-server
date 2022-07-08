@@ -63,7 +63,7 @@ AppDataSource.initialize()
         .then(function (response) {
           console.log(response);
           if (response.length === 0) {
-            res.status(403).send("Not Authenticated");
+            res.status(401).send("Not Authenticated");
           } else {
             const tokenExpiry = String(7 * 24 * 60 * 60);
             AppDataSource.manager
@@ -99,7 +99,7 @@ AppDataSource.initialize()
             await AppDataSource.manager.query(
               `DELETE FROM session_tokens WHERE token = '${String(token)}'`
             );
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -127,7 +127,7 @@ AppDataSource.initialize()
           if (response.length > 0) {
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -153,7 +153,7 @@ AppDataSource.initialize()
               );`);
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -178,7 +178,7 @@ AppDataSource.initialize()
                 res.status(200).send(response);
               });
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -205,7 +205,7 @@ AppDataSource.initialize()
             );
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -239,7 +239,7 @@ AppDataSource.initialize()
                 res.sendStatus(200);
               });
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -257,7 +257,7 @@ AppDataSource.initialize()
             AppDataSource.manager.query(`DELETE FROM session_tokens`);
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -284,7 +284,7 @@ AppDataSource.initialize()
             );
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
@@ -311,7 +311,7 @@ AppDataSource.initialize()
             );
             res.sendStatus(200);
           } else {
-            res.sendStatus(403);
+            res.sendStatus(401);
           }
         });
     });
