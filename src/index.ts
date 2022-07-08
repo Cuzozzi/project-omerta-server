@@ -44,7 +44,7 @@ AppDataSource.initialize()
             false
           );`);
 
-      res.send("works");
+      res.status(200).send("works");
     });
 
     // login authentication
@@ -63,7 +63,7 @@ AppDataSource.initialize()
         .then(function (response) {
           console.log(response);
           if (response.length === 0) {
-            res.send("Not Authenticated");
+            res.status(403).send("Not Authenticated");
           } else {
             const tokenExpiry = String(7 * 24 * 60 * 60);
             AppDataSource.manager
@@ -74,10 +74,9 @@ AppDataSource.initialize()
                 1
               )} second' * ${tokenExpiry}
             )`);
-            res.send({
-              response: "Authenticated",
+            res.status(200).send({
               token: token,
-              admin: response[0].admin,
+              admin: String(response[0].admin),
             });
           }
         });
@@ -95,18 +94,12 @@ AppDataSource.initialize()
         )
         .then(async (response) => {
           if (response.length > 0) {
-            res.send({
-              response: "Token valid",
-              token: token,
-            });
+            res.sendStatus(200);
           } else {
             await AppDataSource.manager.query(
               `DELETE FROM session_tokens WHERE token = '${String(token)}'`
             );
-            res.send({
-              response: "Token invalid",
-              token: token,
-            });
+            res.sendStatus(403);
           }
         });
     });
@@ -118,7 +111,7 @@ AppDataSource.initialize()
       AppDataSource.manager.query(`DELETE FROM session_tokens
       WHERE token = '${String(token)}'
       `);
-      res.send("Token deleted");
+      res.sendStatus(200);
     });
 
     //admin authentication and console
@@ -132,13 +125,9 @@ AppDataSource.initialize()
         )
         .then(async (response) => {
           if (response.length > 0) {
-            res.send({
-              response: "Admin authenticated",
-            });
+            res.sendStatus(200);
           } else {
-            res.send({
-              response: "Admin not authenticated",
-            });
+            res.sendStatus(403);
           }
         });
     });
@@ -162,9 +151,34 @@ AppDataSource.initialize()
                 false,
                 false
               );`);
-            res.send("User added");
+            res.sendStatus(200);
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
+          }
+        });
+    });
+
+    app.post("/admin-console-all-users", async (req, res) => {
+      const token = req.body.token;
+      console.log(token);
+      await AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token)}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length > 0) {
+            console.log("ADMIN AUTH VALID");
+            await AppDataSource.manager
+              .query(
+                `SELECT id, email, admin, moderator FROM login_credentials`
+              )
+              .then(async (response) => {
+                console.log(response);
+                res.status(200).send(response);
+              });
+          } else {
+            res.sendStatus(403);
           }
         });
     });
@@ -184,14 +198,14 @@ AppDataSource.initialize()
             AppDataSource.manager.query(
               `DELETE FROM login_credentials WHERE id = ${user_id}`
             );
-            res.send("User deleted by ID");
+            res.sendStatus(200);
           } else if (response.length > 0 && req.body.user_email !== "") {
             AppDataSource.manager.query(
               `DELETE FROM login_credentials WHERE email = '${user_email}'`
             );
-            res.send("User deleted by email");
+            res.sendStatus(200);
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
           }
         });
     });
@@ -211,7 +225,7 @@ AppDataSource.initialize()
             AppDataSource.manager.query(
               `DELETE FROM session_tokens WHERE user_id = ${user_id}`
             );
-            res.send("User tokens deleted by ID");
+            res.sendStatus(200);
           } else if (response.length > 0 && req.body.user_email !== "") {
             AppDataSource.manager
               .query(
@@ -222,10 +236,10 @@ AppDataSource.initialize()
                 AppDataSource.manager.query(
                   `DELETE FROM session_tokens WHERE user_id = ${user_id}`
                 );
-                res.send("User tokens deleted by email");
+                res.sendStatus(200);
               });
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
           }
         });
     });
@@ -241,9 +255,9 @@ AppDataSource.initialize()
         .then(async (response) => {
           if (response.length > 0) {
             AppDataSource.manager.query(`DELETE FROM session_tokens`);
-            res.send("All session tokens deleted sitewide");
+            res.sendStatus(200);
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
           }
         });
     });
@@ -263,14 +277,14 @@ AppDataSource.initialize()
             AppDataSource.manager.query(
               `UPDATE login_credentials SET moderator = true WHERE id = ${user_id}`
             );
-            res.send("User granted moderator role by ID");
+            res.sendStatus(200);
           } else if (response.length > 0 && req.body.user_email !== "") {
             AppDataSource.manager.query(
               `UPDATE login_credentials SET moderator = true WHERE email = '${user_email}'`
             );
-            res.send("User granted moderator role by email");
+            res.sendStatus(200);
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
           }
         });
     });
@@ -290,14 +304,14 @@ AppDataSource.initialize()
             AppDataSource.manager.query(
               `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
             );
-            res.send("User revoked moderator role by ID");
+            res.sendStatus(200);
           } else if (response.length > 0 && req.body.user_email !== "") {
             AppDataSource.manager.query(
               `UPDATE login_credentials SET moderator = false WHERE email = '${user_email}'`
             );
-            res.send("User revoked moderator role by email");
+            res.sendStatus(200);
           } else {
-            res.send("Authentication failed");
+            res.sendStatus(403);
           }
         });
     });
