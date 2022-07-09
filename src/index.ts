@@ -17,6 +17,22 @@ AppDataSource.initialize()
       next();
     });
 
+    app.use("/api", function (req, res, next) {
+      const token = req.headers.authorization;
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+        WHERE token = '${String(token.split(" ")[1])}'`
+        )
+        .then(async (response) => {
+          if (response.length <= 0) {
+            return res.sendStatus(403);
+          } else {
+            next();
+          }
+        });
+    });
+
     app.use("/admin", function (req, res, next) {
       const token = req.headers.authorization;
       AppDataSource.manager
@@ -83,7 +99,7 @@ AppDataSource.initialize()
         });
     });
 
-    app.get("/authentication_time_check", async (req, res) => {
+    app.get("/api/authentication_time_check", async (req, res) => {
       const token = req.headers.authorization;
       await AppDataSource.manager
         .query(
