@@ -1,35 +1,36 @@
 import { AppDataSource } from "./data-source";
-import { login_credentials } from "./entity/login-credentials";
 import tokenGen from "../tokenGen";
-import { request } from "http";
-import { as } from "pg-promise";
-import { response } from "express";
+import express from "express";
+import cors from "cors";
 
-const express = require("express");
 const app = express();
 app.use(express.json());
 const port = 5433;
-const cors = require("cors");
 
 AppDataSource.initialize()
   .then(async () => {
-    app.use(
-      cors({
-        credentials: true,
-        preflightContinue: true,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        origin: true,
-      })
-    );
+    app.use(cors());
 
     app.use(function (req, res, next) {
       res.header("Access-Control-Allow-Origin", "http://localhost:3001");
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept"
-      );
       res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       next();
+    });
+
+    app.use("/admin", function (req, res, next) {
+      const token = req.headers.authorization;
+      AppDataSource.manager
+        .query(
+          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+        WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+        )
+        .then(async (response) => {
+          if (response.length <= 0) {
+            return res.sendStatus(403);
+          } else {
+            next();
+          }
+        });
     });
 
     // sign up
@@ -48,7 +49,7 @@ AppDataSource.initialize()
     });
 
     // login authentication
-    app.post("/authentication", async (req, res) => {
+    app.put("/authentication", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
       const token = tokenGen();
@@ -82,13 +83,12 @@ AppDataSource.initialize()
         });
     });
 
-    app.post("/authentication_time_check", async (req, res) => {
-      const token = req.body.token;
-      console.log(token);
+    app.get("/authentication_time_check", async (req, res) => {
+      const token = req.headers.authorization;
       await AppDataSource.manager
         .query(
           `SELECT expiry FROM session_tokens WHERE token = '${String(
-            token
+            token.split(" ")[1]
           )}' AND
         expiry > now()`
         )
@@ -97,7 +97,9 @@ AppDataSource.initialize()
             res.sendStatus(200);
           } else {
             await AppDataSource.manager.query(
-              `DELETE FROM session_tokens WHERE token = '${String(token)}'`
+              `DELETE FROM session_tokens WHERE token = '${String(
+                token.split(" ")[1]
+              )}'`
             );
             res.sendStatus(401);
           }
@@ -106,41 +108,22 @@ AppDataSource.initialize()
 
     //logout
     app.delete("/authentication", (req, res) => {
-      const token = req.body.token;
-      console.log(token);
+      const token = req.headers.authorization;
       AppDataSource.manager.query(`DELETE FROM session_tokens
-      WHERE token = '${String(token)}'
+      WHERE token = '${String(token.split(" ")[1])}'
       `);
       res.sendStatus(200);
     });
 
     //admin authentication and console
-    app.post("/admin_authentication", async (req, res) => {
-      const token = req.body.token;
-      console.log(token);
-      AppDataSource.manager
-        .query(
-          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
-        )
-        .then(async (response) => {
-          if (response.length > 0) {
-            res.sendStatus(200);
-          } else {
-            res.sendStatus(401);
-          }
-        });
-    });
-
-    app.post("/admin-console-add", async (req, res) => {
+    app.post("/admin/console-add", async (req, res) => {
       const email = req.body.email;
       const password = req.body.password;
-      const token = req.body.token;
-      console.log(email, password, token);
+      const token = req.headers.authorization;
       AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0) {
@@ -158,17 +141,15 @@ AppDataSource.initialize()
         });
     });
 
-    app.post("/admin-console-all-users", async (req, res) => {
-      const token = req.body.token;
-      console.log(token);
+    app.get("/admin/console-all-users", async (req, res) => {
+      const token = req.headers.authorization;
       await AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0) {
-            console.log("ADMIN AUTH VALID");
             await AppDataSource.manager
               .query(
                 `SELECT id, email, admin, moderator FROM login_credentials`
@@ -183,15 +164,14 @@ AppDataSource.initialize()
         });
     });
 
-    app.delete("/admin-console-delete", (req, res) => {
+    app.delete("/admin/console-delete", (req, res) => {
       const user_id = req.body.user_id;
       const user_email = req.body.user_email;
-      const token = req.body.token;
-      console.log(user_id, user_email, token);
+      const token = req.headers.authorization;
       AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0 && req.body.user_id > 0) {
@@ -210,15 +190,14 @@ AppDataSource.initialize()
         });
     });
 
-    app.delete("/admin-console-delete-tokens", (req, res) => {
+    app.delete("/admin/console-delete-tokens", (req, res) => {
       let user_id = req.body.user_id;
       const user_email = req.body.user_email;
-      const token = req.body.token;
-      console.log(user_id, user_email, token);
+      const token = req.headers.authorization;
       AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0 && req.body.user_id > 0) {
@@ -244,13 +223,12 @@ AppDataSource.initialize()
         });
     });
 
-    app.delete("/admin-console-delete-all-tokens", (req, res) => {
-      const token = req.body.token;
-      console.log(token);
+    app.delete("/admin/console-delete-all-tokens", (req, res) => {
+      const token = req.headers.authorization;
       AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0) {
@@ -262,15 +240,14 @@ AppDataSource.initialize()
         });
     });
 
-    app.put("/admin-console-give-moderator", (req, res) => {
+    app.put("/admin/console-give-moderator", (req, res) => {
       const user_id = req.body.user_id;
       const user_email = req.body.user_email;
-      const token = req.body.token;
-      console.log(user_id, user_email, token);
+      const token = req.headers.authorization;
       AppDataSource.manager
         .query(
           `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
         )
         .then(async (response) => {
           if (response.length > 0 && req.body.user_id > 0) {
@@ -289,31 +266,25 @@ AppDataSource.initialize()
         });
     });
 
-    app.put("/admin-console-remove-moderator", (req, res) => {
+    app.put("/admin/console-remove-moderator", (req, res) => {
       const user_id = req.body.user_id;
       const user_email = req.body.user_email;
-      const token = req.body.token;
-      console.log(user_id, user_email, token);
-      AppDataSource.manager
-        .query(
-          `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token)}' AND admin = true`
-        )
-        .then(async (response) => {
-          if (response.length > 0 && req.body.user_id > 0) {
-            AppDataSource.manager.query(
-              `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
-            );
-            res.sendStatus(200);
-          } else if (response.length > 0 && req.body.user_email !== "") {
-            AppDataSource.manager.query(
-              `UPDATE login_credentials SET moderator = false WHERE email = '${user_email}'`
-            );
-            res.sendStatus(200);
-          } else {
-            res.sendStatus(401);
-          }
-        });
+      {
+        if (req.body.user_id > 0) {
+          AppDataSource.manager.query(
+            `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
+          );
+          res.sendStatus(200);
+        } else if (req.body.user_email !== "") {
+          AppDataSource.manager.query(
+            `UPDATE login_credentials SET moderator = false WHERE email = '${user_email}'`
+          );
+          res.sendStatus(200);
+        } else {
+          res.sendStatus(401);
+        }
+      }
+      return;
     });
 
     app.listen(port, () => {

@@ -2,7 +2,7 @@
   "name": "project-omerta-server",
   "version": "1.0.0",
   "description": "server for project omerta",
-  "main": "app.js",
+  "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
