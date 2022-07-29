@@ -16,4 +16,7 @@ export class login_credentials {
 
   @Column()
   admin: boolean;
+
+  @Column({ nullable: true })
+  tilepower: number;
 }

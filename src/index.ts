@@ -1,6 +1,6 @@
 import { AppDataSource } from "./data-source";
 import tokenGen from "../tokenGen";
-import express from "express";
+import express, { response } from "express";
 import cors from "cors";
 
 const app = express();
@@ -301,6 +301,48 @@ AppDataSource.initialize()
         }
       }
       return;
+    });
+
+    //map endpoints
+    app.get("/map/total_tiles", (req, res) => {
+      AppDataSource.manager
+        .query(`SELECT count(*) FROM tile_positions`)
+        .then(async (response) => {
+          if (response) {
+            res.status(200).send(response);
+            console.log(response);
+          } else {
+            res.sendStatus(404);
+          }
+        });
+    });
+
+    app.get("/map/get_tilepower", (req, res) => {
+      AppDataSource.manager
+        .query(`SELECT SUM (tilepower) AS tilepower FROM login_credentials`)
+        .then(async (response) => {
+          if (response) {
+            res.status(200).send(response);
+            console.log(response);
+          } else {
+            res.sendStatus(404);
+          }
+        });
+    });
+
+    app.get("/map/what_tile_next", (req, res) => {
+      AppDataSource.manager
+        .query(
+          `(SELECT MIN (x) FROM tile_positions) UNION ALL (SELECT MIN (y) FROM tile_positions)`
+        )
+        .then(async (response) => {
+          if (response) {
+            res.status(200).send(response);
+            console.log(response);
+          } else {
+            res.sendStatus(404);
+          }
+        });
     });
 
     app.listen(port, () => {
