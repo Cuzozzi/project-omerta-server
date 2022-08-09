@@ -345,37 +345,37 @@ AppDataSource.initialize()
 
     app.post("/map/tile-generation", (req, res) => {
       const x = req.body.x;
-      const y = req.body.y;
-      console.log(x, y);
+      const z = req.body.z;
+      console.log(x, z);
       AppDataSource.manager
-        .query(`SELECT * FROM tile_positions WHERE x = ${x - 32} AND y = ${y}`)
+        .query(`SELECT * FROM tile_positions WHERE x = ${x - 32} AND z = ${z}`)
         .then(async (response) => {
           if (response.length > 0) {
             console.log(response);
-            res.status(200).json({ response: response, x: x, y: y + 32 });
+            res.status(200).json({ response: response, x: x, z: z + 32 });
             AppDataSource.manager.query(
-              `INSERT INTO tile_positions (x, y, z) SELECT ${x}, ${
-                y + 32
-              }, 0 WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE y = ${
-                y + 32
-              } AND x = ${x} AND z = 0)`
+              `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
+                z + 32
+              } WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${
+                z + 32
+              } AND x = ${x} AND y = 0)`
             );
             return;
           }
           AppDataSource.manager
             .query(
-              `SELECT * FROM tile_positions WHERE x = ${x} AND y = ${y - 32}`
+              `SELECT * FROM tile_positions WHERE x = ${x} AND z = ${z - 32}`
             )
             .then(async (response) => {
               if (response.length > 0) {
-                res.status(200).json({ response: response, x: x - 32, y: y });
+                res.status(200).json({ response: response, x: x - 32, z: z });
                 console.log(response);
                 AppDataSource.manager.query(
                   `INSERT INTO tile_positions (x, y, z) SELECT ${
                     x - 32
-                  }, ${y}, 0 WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE y = ${y} AND x = ${
+                  }, 0, ${z} WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${z} AND x = ${
                     x - 32
-                  } AND z = 0)`
+                  } AND y = 0)`
                 );
                 return;
               }
@@ -383,41 +383,41 @@ AppDataSource.initialize()
                 .query(
                   `SELECT * FROM tile_positions WHERE x = ${
                     x + 32
-                  } and y = ${y}`
+                  } and z = ${z}`
                 )
                 .then(async (response) => {
                   if (response.length > 0) {
                     res
                       .status(200)
-                      .json({ resppnse: response, x: x, y: y - 32 });
+                      .json({ resppnse: response, x: x, z: z - 32 });
                     console.log(response);
                     AppDataSource.manager.query(
-                      `INSERT INTO tile_positions (x, y, z) SELECT ${x}, ${
-                        y - 32
-                      }, 0 WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE y = ${
-                        y - 32
-                      } AND x = ${x} AND z = 0)`
+                      `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
+                        z - 32
+                      } WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${
+                        z - 32
+                      } AND x = ${x} AND y = 0)`
                     );
                     return;
                   }
                   AppDataSource.manager
                     .query(
-                      `SELECT * FROM tile_positions WHERE x = ${x} and y = ${
-                        y + 32
+                      `SELECT * FROM tile_positions WHERE x = ${x} and z = ${
+                        z + 32
                       }`
                     )
                     .then(async (response) => {
                       if (response.length > 0) {
                         res
                           .status(200)
-                          .json({ response: response, x: x + 32, y: y });
+                          .json({ response: response, x: x + 32, z: z });
                         console.log(response);
                         AppDataSource.manager.query(
                           `INSERT INTO tile_positions (x, y, z) SELECT ${
                             x + 32
-                          }, ${y}, 0 WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE y = ${y} AND x = ${
+                          }, 0, ${z} WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${z} AND x = ${
                             x + 32
-                          } AND z = 0)`
+                          } AND y = 0)`
                         );
                         return;
                       }
