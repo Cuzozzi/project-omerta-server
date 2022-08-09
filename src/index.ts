@@ -310,7 +310,7 @@ AppDataSource.initialize()
         .then(async (response) => {
           if (response) {
             res.status(200).send(response);
-            console.log(response);
+            //console.log(response);
           } else {
             res.sendStatus(404);
           }
@@ -323,7 +323,7 @@ AppDataSource.initialize()
         .then(async (response) => {
           if (response) {
             res.status(200).send(response);
-            console.log(response);
+            //console.log(response);
           } else {
             res.sendStatus(404);
           }
@@ -336,22 +336,29 @@ AppDataSource.initialize()
         .then(async (response) => {
           if (response) {
             res.status(200).send(response);
-            console.log(response);
+            //console.log(response);
           } else {
             res.sendStatus(401);
           }
         });
     });
 
-    app.post("/map/tile-generation", (req, res) => {
-      const x = req.body.x;
-      const z = req.body.z;
-      console.log(x, z);
+    app.get("/map/tile-generation", async (req, res) => {
+      const allTiles = await AppDataSource.manager.query(
+        `SELECT * FROM tile_positions ORDER BY "ID" ASC`
+      );
+      const lastTile = allTiles[allTiles.length - 1];
+      console.log(allTiles);
+      console.log(lastTile);
+      console.log(lastTile.x, lastTile.z);
+      const x = Number(lastTile.x);
+      const z = Number(lastTile.z);
+
       AppDataSource.manager
         .query(`SELECT * FROM tile_positions WHERE x = ${x - 32} AND z = ${z}`)
         .then(async (response) => {
           if (response.length > 0) {
-            console.log(response);
+            console.log("Return One");
             res.status(200).json({ response: response, x: x, z: z + 32 });
             AppDataSource.manager.query(
               `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
@@ -369,7 +376,7 @@ AppDataSource.initialize()
             .then(async (response) => {
               if (response.length > 0) {
                 res.status(200).json({ response: response, x: x - 32, z: z });
-                console.log(response);
+                console.log("Return Two");
                 AppDataSource.manager.query(
                   `INSERT INTO tile_positions (x, y, z) SELECT ${
                     x - 32
@@ -390,7 +397,7 @@ AppDataSource.initialize()
                     res
                       .status(200)
                       .json({ resppnse: response, x: x, z: z - 32 });
-                    console.log(response);
+                    console.log("Return Three");
                     AppDataSource.manager.query(
                       `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
                         z - 32
@@ -411,7 +418,7 @@ AppDataSource.initialize()
                         res
                           .status(200)
                           .json({ response: response, x: x + 32, z: z });
-                        console.log(response);
+                        console.log("Return Four");
                         AppDataSource.manager.query(
                           `INSERT INTO tile_positions (x, y, z) SELECT ${
                             x + 32
@@ -421,7 +428,7 @@ AppDataSource.initialize()
                         );
                         return;
                       }
-                      res.sendStatus(404);
+                      res.sendStatus(401);
                     });
                 });
             });
