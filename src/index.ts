@@ -361,7 +361,7 @@ AppDataSource.initialize()
             console.log("Return One");
             res.status(200).json({ response: response, x: x, z: z + 32 });
             AppDataSource.manager.query(
-              `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
+              `LOCK TABLE tile_positions; INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
                 z + 32
               } WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${
                 z + 32
@@ -378,7 +378,7 @@ AppDataSource.initialize()
                 res.status(200).json({ response: response, x: x - 32, z: z });
                 console.log("Return Two");
                 AppDataSource.manager.query(
-                  `INSERT INTO tile_positions (x, y, z) SELECT ${
+                  `LOCK TABLE tile_positions; INSERT INTO tile_positions (x, y, z) SELECT ${
                     x - 32
                   }, 0, ${z} WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${z} AND x = ${
                     x - 32
@@ -399,7 +399,7 @@ AppDataSource.initialize()
                       .json({ resppnse: response, x: x, z: z - 32 });
                     console.log("Return Three");
                     AppDataSource.manager.query(
-                      `INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
+                      `LOCK TABLE tile_positions; INSERT INTO tile_positions (x, y, z) SELECT ${x}, 0, ${
                         z - 32
                       } WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${
                         z - 32
@@ -420,7 +420,7 @@ AppDataSource.initialize()
                           .json({ response: response, x: x + 32, z: z });
                         console.log("Return Four");
                         AppDataSource.manager.query(
-                          `INSERT INTO tile_positions (x, y, z) SELECT ${
+                          `LOCK TABLE tile_positions; INSERT INTO tile_positions (x, y, z) SELECT ${
                             x + 32
                           }, 0, ${z} WHERE NOT EXISTS (SELECT 1 FROM tile_positions WHERE z = ${z} AND x = ${
                             x + 32
