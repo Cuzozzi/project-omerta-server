@@ -3,11 +3,6 @@ import { AppDataSource } from "../data-source";
 import tokenGen from "../helpers/tokenGen";
 let router = express.Router();
 
-router.use((req, res, next) => {
-  console.log(req.url, "@", Date.now());
-  next();
-});
-
 router.use("/api", function (req, res, next) {
   const token = req.headers.authorization;
   AppDataSource.manager

@@ -2,11 +2,6 @@ import express from "express";
 import { AppDataSource } from "../data-source";
 let router = express.Router();
 
-router.use((req, res, next) => {
-  console.log(req.url, "@", Date.now());
-  next();
-});
-
 //count all tiles
 router.get("/count-tiles", (req, res) => {
   AppDataSource.manager
