@@ -1,31 +1,18 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-const pgtools = require("pgtools");
 import { AppDataSource } from "./data-source";
 import express from "express";
 import cors from "cors";
 import devEnvIntialization from "./helpers/devenv_initialization";
+import createDB from "./helpers/createdb";
 import authentication from "./routes/authentication";
 import admin from "./routes/admin";
 import map from "./routes/map";
 
 const app = express();
-app.use(express.json());
 const port = process.env.SERVER_PORT;
-const config = {
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT,
-};
-
-pgtools.createdb(config, "omerta_db", function (err, res) {
-  if (err) {
-    console.log("Database already exists!");
-  } else if (res) {
-    console.log("Database created!");
-  }
-});
+app.use(express.json());
+createDB();
 
 AppDataSource.initialize()
   .then(async () => {
@@ -47,4 +34,4 @@ AppDataSource.initialize()
       console.log(`Project-Omerta-Server listening on port ${port}`);
     });
   })
-  .catch((error) => console.log(error));
+  .catch((error: any) => console.log(error));
