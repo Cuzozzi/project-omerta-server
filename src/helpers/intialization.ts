@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 const port = process.env.SERVER_PORT;
 
-function ServerStart() {
+function serverStart() {
   AppDataSource.initialize()
     .then(async () => {
       app.use(cors());
@@ -34,4 +34,4 @@ function ServerStart() {
     .catch((error: any) => console.log(error));
 }
 
-export default ServerStart;
+export default serverStart;

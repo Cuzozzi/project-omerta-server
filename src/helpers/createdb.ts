@@ -1,5 +1,3 @@
-import ServerStart from "./intialization";
-
 const pgtools = require("pgtools");
 const { Client } = require("pg");
 
@@ -10,14 +8,10 @@ const config = {
   port: process.env.DB_PORT,
 };
 
-// TODO: await this next line so we dont have a race condition
-
 async function createDB() {
-  await pgtools.createdb(config, "omerta_db", function (err: any, res: any) {
-    if (err) {
-      console.log("Database already exists!");
-      ServerStart();
-    } else if (res) {
+  await pgtools
+    .createdb(config, "omerta_db")
+    .then(() => {
       console.log("Database created!");
 
       const client = new Client({
@@ -28,7 +22,7 @@ async function createDB() {
         database: "omerta_db",
       });
 
-      client.connect((err) => {
+      client.connect((err: any) => {
         if (err) {
           console.error("connection error", err.stack);
         } else {
@@ -41,9 +35,8 @@ async function createDB() {
         console.log(res);
         client.end();
       });
-      ServerStart();
-    }
-  });
+    })
+    .catch(() => console.log("Database already exists!"));
 }
 
 export default createDB;

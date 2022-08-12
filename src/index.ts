@@ -1,11 +1,17 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import createDB from "./helpers/createdb";
+import serverStart from "./helpers/intialization";
 
 process.on("uncaughtException", function (err) {
-  console.log(err);
-  var stack = err.stack;
-  //you can also notify the err/stack to support via email or other APIs
+  console.error(err);
+  // var stack = err.stack;
+  // wa can send the stack to support via email or other APIs
 });
 
-createDB();
+async function main() {
+  await createDB();
+  serverStart();
+}
+
+main();
