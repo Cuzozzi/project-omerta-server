@@ -2,4 +2,6 @@
 
 Guide pending!
 
-# TODO: Mention installing postgres AND pgcrypto AND daisyUI
+# TODO: Mention installing postgres AND daisyUI
+
+#
