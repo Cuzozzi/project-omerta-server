@@ -25,7 +25,7 @@ function devEnvIntialization() {
       console.log("Tile positions found, skipping seeding");
     } else if (response.length === 0) {
       AppDataSource.query(
-        `INSERT INTO tile_positions (x, y , z) VALUES (0, 0, 0), (32, 0, 0)`
+        `INSERT INTO tile_positions (x, y , z) VALUES (0, 0, 0)`
       );
       console.log("Tile seeding complete");
     } else {
