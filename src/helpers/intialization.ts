@@ -4,6 +4,7 @@ import devEnvIntialization from "../helpers/devenv_initialization";
 import authentication from "../routes/authentication";
 import admin from "../routes/admin";
 import map from "../routes/map";
+import account from "../routes/account";
 import express from "express";
 
 const app = express();
@@ -26,6 +27,7 @@ function serverStart() {
       app.use("/authentication", authentication);
       app.use("/admin", admin);
       app.use("/map", map);
+      app.use("/account", account);
 
       app.listen(port, () => {
         console.log(`Project-Omerta-Server listening on port ${port}`);

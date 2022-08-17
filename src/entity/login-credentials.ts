@@ -6,6 +6,9 @@ export class login_credentials {
   id: number;
 
   @Column()
+  username: string;
+
+  @Column()
   email: string;
 
   @Column()
