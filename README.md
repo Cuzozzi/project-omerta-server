@@ -28,6 +28,6 @@ npm install
 
 npm start
 
-## Technology we're using on the server
+## Technology I'm using on the server
 
-We're using NodeJS, ExpressJS, TypeORM, PostgreSQL
+NodeJS, ExpressJS, TypeORM, PostgreSQL
