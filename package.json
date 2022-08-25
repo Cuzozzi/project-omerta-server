@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "typeorm": "typeorm-ts-node-commonjs"
   },
-  "author": "Machied",
+  "author": "Cuzozzi",
   "license": "ISC",
   "dependencies": {
     "@types/express": "^4.17.13",

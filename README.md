@@ -27,3 +27,7 @@ Run the following commands in the order listed:
 npm install
 
 npm start
+
+## Technology we're using on the server
+
+We're using NodeJS, ExpressJS, TypeORM, PostgreSQL
