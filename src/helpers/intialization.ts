@@ -17,10 +17,18 @@ function serverStart() {
       app.use(cors());
 
       app.use(function (req, res, next) {
-        res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL);
+        const allowedOrigins = ['https://omerta.cuzozzi.com', 'http://localhost:3001']
+        const origin = req.headers.origin
+        if (allowedOrigins.includes(origin)) {
+          res.setHeader('Access-Control-Allow-Origin', origin)
+        }
         res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         next();
       });
+
+      app.get("/", (req, res) => {
+        res.send("Hello, I'm working!")
+      })
 
       devEnvIntialization();
 
