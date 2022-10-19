@@ -31,7 +31,9 @@ router
       .then(async (response) => {
         if (response.length > 0) {
           await AppDataSource.manager
-            .query(`SELECT id, email, admin, moderator FROM login_credentials`)
+            .query(
+              `SELECT id, username, email, admin, moderator FROM login_credentials`
+            )
             .then(async (response) => {
               console.log(response);
               res.status(200).send(response);
