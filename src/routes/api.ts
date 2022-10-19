@@ -77,7 +77,7 @@ router.route("/authentication").get(async (req, res) => {
 });
 
 //logout
-router.route("/delete").delete(async (req, res) => {
+router.route("/logout").delete(async (req, res) => {
   const token = req.headers.authorization;
   AppDataSource.manager.query(`DELETE FROM session_tokens
       WHERE token = '${String(token.split(" ")[1])}'
