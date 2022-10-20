@@ -9,10 +9,11 @@ router.route("/signup").post(async (req, res) => {
   const password = req.body.password;
   console.log("Username, Email & Password: ", username, email, password);
   await AppDataSource.manager
-    .query(`INSERT INTO login_credentials (username, email, password, admin, moderator) VALUES (
+    .query(`INSERT INTO login_credentials (username, email, password, tilepower, admin, moderator) VALUES (
         '${username}',
         '${email}',
         crypt('${password}', gen_salt('bf', 8)),
+        3,
         false,
         false
       );`);
