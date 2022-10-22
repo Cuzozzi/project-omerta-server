@@ -46,6 +46,7 @@ router
   //post new user
   .post(async (req, res) => {
     const email = req.body.email;
+    const username = req.body.username;
     const password = req.body.password;
     const token = req.headers.authorization;
     AppDataSource.manager
@@ -56,7 +57,8 @@ router
       .then(async (response) => {
         if (response.length > 0) {
           AppDataSource.manager
-            .query(`INSERT INTO login_credentials (email, password, admin, moderator) VALUES (
+            .query(`INSERT INTO login_credentials (username, email, password, admin, moderator) VALUES (
+                '${username}',
                 '${email}',
                 crypt('${password}', gen_salt('bf', 8)),
                 false,
