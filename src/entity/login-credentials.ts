@@ -20,6 +20,9 @@ export class login_credentials {
   @Column()
   admin: boolean;
 
+  @Column()
+  super_admin: boolean;
+
   @Column({ nullable: true })
   tilepower: number;
 }

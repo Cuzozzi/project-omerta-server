@@ -6,10 +6,11 @@ function devEnvIntialization() {
       console.log("Login credentials found, skipping seeding");
     } else if (response.length === 0) {
       AppDataSource.query(
-        `INSERT INTO login_credentials (username, email, password, admin, moderator, tilepower) VALUES 
+        `INSERT INTO login_credentials (username, email, password, admin, super_admin, moderator, tilepower) VALUES 
         ('${process.env.DEFAULT_USERNAME}',
         '${process.env.DEFAULT_EMAIL}',
         crypt('${process.env.DEFAULT_PASSWORD}', gen_salt('bf', 8)),
+        true,
         true,
         true,
         9
