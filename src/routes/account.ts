@@ -20,7 +20,6 @@ router.use("/", function (req, res, next) {
 
 router.get("/info", (req, res) => {
   const token = req.headers.authorization;
-  console.log("running");
   AppDataSource.manager
     .query(
       `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id

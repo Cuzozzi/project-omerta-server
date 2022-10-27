@@ -4,8 +4,10 @@ import devEnvIntialization from "../helpers/devenv_initialization";
 import api from "../routes/api";
 import admin from "../routes/admin";
 import map from "../routes/map";
+import authentication from "../routes/authentication";
 import account from "../routes/account";
 import express from "express";
+import dangerous from "../routes/dangerous";
 
 const app = express();
 app.use(express.json());
@@ -39,6 +41,8 @@ function serverStart() {
       app.use("/admin", admin);
       app.use("/map", map);
       app.use("/account", account);
+      app.use("/authentication", authentication);
+      app.use("/dangerous", dangerous);
 
       app.listen(port, () => {
         console.log(`Project-Omerta-Server listening on port ${port}`);

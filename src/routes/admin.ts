@@ -7,7 +7,9 @@ router.use("/console", function (req, res, next) {
   AppDataSource.manager
     .query(
       `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-      WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+      WHERE token = '${String(
+        token.split(" ")[1]
+      )}' AND admin = true OR super_admin = true`
     )
     .then(async (response) => {
       if (response.length <= 0) {
@@ -26,7 +28,9 @@ router
     await AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
@@ -53,7 +57,9 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
@@ -86,22 +92,18 @@ router
   //delete existing user
   .delete(async (req, res) => {
     const user_id = req.body.user_id;
-    const user_email = req.body.user_email;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
           AppDataSource.manager.query(
             `DELETE FROM login_credentials WHERE id = ${user_id}`
-          );
-          res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager.query(
-            `DELETE FROM login_credentials WHERE email = '${user_email}'`
           );
           res.sendStatus(200);
         } else {
@@ -114,13 +116,14 @@ router
   .route("/console/tokens")
   //delete all tokens from specific account
   .put(async (req, res) => {
-    let user_id = req.body.user_id;
-    const user_email = req.body.user_email;
+    const user_id = req.body.user_id;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-        WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+        WHERE token = '${String(
+          token.split(" ")[1]
+        )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
@@ -128,18 +131,6 @@ router
             `DELETE FROM session_tokens WHERE user_id = ${user_id}`
           );
           res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager
-            .query(
-              `SELECT id FROM login_credentials WHERE email = '${user_email}'`
-            )
-            .then(async (response) => {
-              user_id = response[0].id;
-              AppDataSource.manager.query(
-                `DELETE FROM session_tokens WHERE user_id = ${user_id}`
-              );
-              res.sendStatus(200);
-            });
         } else {
           res.sendStatus(401);
         }
@@ -151,7 +142,9 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
@@ -168,7 +161,6 @@ router
   //give admin role to account
   .put(async (req, res) => {
     const user_id = req.body.user_id;
-    const user_email = req.body.user_email;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
@@ -182,18 +174,12 @@ router
             `UPDATE login_credentials SET admin = true WHERE id = ${user_id}`
           );
           res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager.query(
-            `UPDATE login_credentials SET admin = true WHERE email = '${user_email}'`
-          );
-          res.sendStatus(200);
         }
       });
   })
 
   .delete(async (req, res) => {
     const user_id = req.body.user_id;
-    const user_email = req.body.user_email;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
@@ -204,11 +190,6 @@ router
         if (response.length > 0 && req.body.user_id > 0) {
           AppDataSource.manager.query(
             `UPDATE login_credentials SET admin = false WHERE id = ${user_id}`
-          );
-          res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager.query(
-            `UPDATE login_credentials SET admin = false WHERE email = '${user_email}'`
           );
           res.sendStatus(200);
         } else {
@@ -222,22 +203,18 @@ router
   //give moderator role to account
   .put(async (req, res) => {
     const user_id = req.body.user_id;
-    const user_email = req.body.user_email;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
           AppDataSource.manager.query(
             `UPDATE login_credentials SET moderator = true WHERE id = ${user_id}`
-          );
-          res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager.query(
-            `UPDATE login_credentials SET moderator = true WHERE email = '${user_email}'`
           );
           res.sendStatus(200);
         } else {
@@ -248,22 +225,18 @@ router
   //delete moderator role from account
   .delete(async (req, res) => {
     const user_id = req.body.user_id;
-    const user_email = req.body.user_email;
     const token = req.headers.authorization;
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
+          WHERE token = '${String(
+            token.split(" ")[1]
+          )}' AND admin = true OR super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
           AppDataSource.manager.query(
             `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
-          );
-          res.sendStatus(200);
-        } else if (response.length > 0 && req.body.user_email !== "") {
-          AppDataSource.manager.query(
-            `UPDATE login_credentials SET moderator = false WHERE email = '${user_email}'`
           );
           res.sendStatus(200);
         } else {
