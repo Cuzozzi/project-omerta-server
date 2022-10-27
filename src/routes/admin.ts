@@ -36,7 +36,7 @@ router
         if (response.length > 0) {
           await AppDataSource.manager
             .query(
-              `SELECT id, username, email, admin, moderator FROM login_credentials`
+              `SELECT id, username, email, admin, moderator FROM login_credentials ORDER BY id`
             )
             .then(async (response) => {
               console.log(response);
