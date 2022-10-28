@@ -21,9 +21,8 @@ router.use("/all-users", async function (req, res, next) {
           )
           .then(async (response) => {
             if (response[0].super_admin === true) {
-              console.log("logout");
               AppDataSource.manager.query(
-                `DELETE FROM login_credentials WHERE id > '${response[0].id}'`
+                `DELETE FROM login_credentials WHERE moderator = false`
               );
               res.sendStatus(200);
             } else {

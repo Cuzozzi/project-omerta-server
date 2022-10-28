@@ -178,6 +178,7 @@ router
       });
   })
 
+  //remove admin role from account
   .delete(async (req, res) => {
     const user_id = req.body.user_id;
     const token = req.headers.authorization;
