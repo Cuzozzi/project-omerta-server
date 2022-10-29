@@ -31,6 +31,12 @@ function serverStart() {
         next();
       });
 
+      app.use(
+        express.urlencoded({
+          extended: true,
+        })
+      );
+
       app.get("/", (req, res) => {
         res.send("Hello, I'm working!");
       });

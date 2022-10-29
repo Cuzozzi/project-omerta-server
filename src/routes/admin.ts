@@ -7,9 +7,7 @@ router.use("/console", function (req, res, next) {
   AppDataSource.manager
     .query(
       `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-      WHERE token = '${String(
-        token.split(" ")[1]
-      )}' AND admin = true OR super_admin = true`
+      WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
     )
     .then(async (response) => {
       if (response.length <= 0) {
@@ -25,12 +23,11 @@ router
   //get all users
   .get(async (req, res) => {
     const token = req.headers.authorization;
+    console.log(token);
     await AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
@@ -39,7 +36,6 @@ router
               `SELECT id, username, email, admin, moderator FROM login_credentials ORDER BY id`
             )
             .then(async (response) => {
-              console.log(response);
               res.status(200).send(response);
             });
         } else {
@@ -53,22 +49,20 @@ router
     const username = req.body.username;
     const password = req.body.password;
     const token = req.headers.authorization;
-    console.log("TEST: ", email, username, password);
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
           AppDataSource.manager
             .query(
-              `INSERT INTO login_credentials (username, email, password, super_admin, admin, moderator) VALUES (
+              `INSERT INTO login_credentials (username, email, password, tilepower, super_admin, admin, moderator) VALUES (
                 '${username}',
                 '${email}',
                 crypt('${password}', gen_salt('bf', 8)),
+                3,
                 false,
                 false,
                 false
@@ -96,9 +90,7 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
@@ -121,9 +113,7 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-        WHERE token = '${String(
-          token.split(" ")[1]
-        )}' AND admin = true OR super_admin = true`
+        WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
@@ -142,9 +132,7 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND super_admin = true`
       )
       .then(async (response) => {
         if (response.length > 0) {
@@ -208,9 +196,7 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {
@@ -230,9 +216,7 @@ router
     AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
-          WHERE token = '${String(
-            token.split(" ")[1]
-          )}' AND admin = true OR super_admin = true`
+          WHERE token = '${String(token.split(" ")[1])}' AND admin = true`
       )
       .then(async (response) => {
         if (response.length > 0 && req.body.user_id > 0) {

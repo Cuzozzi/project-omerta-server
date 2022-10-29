@@ -134,17 +134,19 @@ router.put("/test-generation", async (req, res) => {
     for (let i = countTiles; i < tilePower; i++) {
       renderArray.push(generationLogic(lastX, lastZ));
     }
+    let constructString = `INSERT INTO tile_positions (x, y, z) VALUES`;
+    renderArray.forEach(function (i, idx, array) {
+      if (idx !== array.length - 1) {
+        constructString = constructString + " " + `(${i.x}, 0, ${i.z}), `;
+      } else if (idx === array.length - 1) {
+        constructString = constructString + " " + `(${i.x}, 0, ${i.z})`;
+      }
+    });
+    AppDataSource.query(constructString);
+    res.status(200).send(renderArray);
+  } else {
+    res.status(200).send("Tile generation up to date!");
   }
-  let constructString = `INSERT INTO tile_positions (x, y, z) VALUES`;
-  renderArray.forEach(function (i, idx, array) {
-    if (idx !== array.length - 1) {
-      constructString = constructString + " " + `(${i.x}, 0, ${i.z}), `;
-    } else if (idx === array.length - 1) {
-      constructString = constructString + " " + `(${i.x}, 0, ${i.z})`;
-    }
-  });
-  AppDataSource.query(constructString);
-  res.status(200).send(renderArray);
 });
 
 export default router;

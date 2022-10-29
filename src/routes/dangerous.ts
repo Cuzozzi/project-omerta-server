@@ -22,7 +22,7 @@ router.use("/all-users", async function (req, res, next) {
           .then(async (response) => {
             if (response[0].super_admin === true) {
               AppDataSource.manager.query(
-                `DELETE FROM login_credentials WHERE moderator = false`
+                `DELETE FROM login_credentials WHERE admin = false`
               );
               res.sendStatus(200);
             } else {
