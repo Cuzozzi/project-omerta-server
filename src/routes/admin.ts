@@ -21,9 +21,9 @@ router.use("/console", function (req, res, next) {
 router
   .route("/console/user")
   //get all users
-  .get(async (req, res) => {
+  .put(async (req, res) => {
     const token = req.headers.authorization;
-    console.log(token);
+    const offset = req.body.offset;
     await AppDataSource.manager
       .query(
         `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
@@ -33,7 +33,7 @@ router
         if (response.length > 0) {
           await AppDataSource.manager
             .query(
-              `SELECT id, username, email, admin, moderator FROM login_credentials ORDER BY id`
+              `SELECT id, tilepower, username, email, admin, moderator FROM login_credentials ORDER BY id LIMIT 10 OFFSET ${offset}`
             )
             .then(async (response) => {
               res.status(200).send(response);
@@ -222,6 +222,45 @@ router
         if (response.length > 0 && req.body.user_id > 0) {
           AppDataSource.manager.query(
             `UPDATE login_credentials SET moderator = false WHERE id = ${user_id}`
+          );
+          res.sendStatus(200);
+        } else {
+          res.sendStatus(401);
+        }
+      });
+  });
+
+router
+  .route("/console/map")
+  .put(async (req, res) => {
+    const token = req.headers.authorization;
+    AppDataSource.manager
+      .query(
+        `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token.split(" ")[1])}' AND super_admin = true`
+      )
+      .then(async (response) => {
+        if (response.length > 0) {
+          AppDataSource.manager.query(
+            `UPDATE login_credentials SET tilepower = tilepower + 10 WHERE id = 1 `
+          );
+          res.sendStatus(200);
+        } else {
+          res.sendStatus(401);
+        }
+      });
+  })
+  .delete(async (req, res) => {
+    const token = req.headers.authorization;
+    AppDataSource.manager
+      .query(
+        `SELECT * FROM login_credentials JOIN session_tokens ON login_credentials.id = user_id
+          WHERE token = '${String(token.split(" ")[1])}' AND super_admin = true`
+      )
+      .then(async (response) => {
+        if (response.length > 0) {
+          AppDataSource.manager.query(
+            `UPDATE login_credentials SET tilepower = tilepower - 10 WHERE id = 1 `
           );
           res.sendStatus(200);
         } else {
